@@ -1,0 +1,139 @@
+import React, { useState } from 'react';
+import { 
+  Card, 
+  CardContent, 
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle, 
+  AlertDialogTrigger 
+} from '@/components/ui/alert-dialog';
+
+const PublicServiceRequest = () => {
+  const [requests, setRequests] = useState([]);
+  const [newRequest, setNewRequest] = useState({
+    title: '',
+    description: '',
+    department: '',
+    priority: 'medium'
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const requestWithTimestamp = {
+      ...newRequest,
+      id: Date.now(),
+      status: 'pending',
+      timestamp: new Date().toISOString()
+    };
+    setRequests([...requests, requestWithTimestamp]);
+    setNewRequest({ title: '', description: '', department: '', priority: 'medium' });
+  };
+
+  const updateRequestStatus = (id, newStatus) => {
+    setRequests(requests.map(req => 
+      req.id === id ? { ...req, status: newStatus } : req
+    ));
+  };
+
+  return (
+    <div className="container mx-auto p-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Servizi Pubblici - Public Service Request Management</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input 
+              placeholder="Titolo Richiesta (Request Title)" 
+              value={newRequest.title}
+              onChange={(e) => setNewRequest({...newRequest, title: e.target.value})}
+              required
+            />
+            <Textarea 
+              placeholder="Descrizione Dettagliata (Detailed Description)" 
+              value={newRequest.description}
+              onChange={(e) => setNewRequest({...newRequest, description: e.target.value})}
+              required
+            />
+            <div className="flex space-x-4">
+              <Input 
+                placeholder="Dipartimento (Department)" 
+                value={newRequest.department}
+                onChange={(e) => setNewRequest({...newRequest, department: e.target.value})}
+                required
+              />
+              <select 
+                value={newRequest.priority}
+                onChange={(e) => setNewRequest({...newRequest, priority: e.target.value})}
+                className="form-select"
+              >
+                <option value="low">Bassa Priorità (Low Priority)</option>
+                <option value="medium">Media Priorità (Medium Priority)</option>
+                <option value="high">Alta Priorità (High Priority)</option>
+              </select>
+            </div>
+            <Button type="submit" className="w-full">
+              Invia Richiesta (Submit Request)
+            </Button>
+          </form>
+
+          <div className="mt-6">
+            <h2 className="text-xl font-bold mb-4">Richieste Correnti (Current Requests)</h2>
+            {requests.map(request => (
+              <Card key={request.id} className="mb-4">
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="font-bold">{request.title}</h3>
+                      <p>{request.description}</p>
+                      <p>Dipartimento: {request.department}</p>
+                      <p>Stato: {request.status}</p>
+                    </div>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline">Aggiorna Stato (Update Status)</Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Cambia Stato Richiesta</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Selezionare il nuovo stato per questa richiesta.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Annulla (Cancel)</AlertDialogCancel>
+                          {['in progress', 'resolved', 'rejected'].map(status => (
+                            <AlertDialogAction 
+                              key={status} 
+                              onClick={() => updateRequestStatus(request.id, status)}
+                            >
+                              {status.charAt(0).toUpperCase() + status.slice(1)}
+                            </AlertDialogAction>
+                          ))}
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default PublicServiceRequest;
